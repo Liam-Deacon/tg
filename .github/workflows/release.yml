@@ -16,9 +16,9 @@ jobs:
         include:
           - os: ubuntu-latest
             asset: linux-x86_64
-          - os: macos-13
+          - os: macos-15-intel
             asset: macos-x86_64
-          - os: macos-14
+          - os: macos-15
             asset: macos-arm64
     steps:
       - name: Checkout
@@ -40,7 +40,7 @@ jobs:
         run: |
           brew install \
             autoconf automake cmake pkg-config \
-            libconfig libevent jansson lua@5.3 openssl@3 readline
+            libconfig libevent jansson lua openssl@3 readline
 
       - name: Build (CMake)
         run: |

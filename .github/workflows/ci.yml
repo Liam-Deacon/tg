@@ -38,6 +38,7 @@ jobs:
             export OPENSSL_ROOT_DIR="$(brew --prefix openssl@3)"
             export PKG_CONFIG_PATH="$(brew --prefix openssl@3)/lib/pkgconfig:$(brew --prefix readline)/lib/pkgconfig:${PKG_CONFIG_PATH}"
           fi
+          ./bootstrap
           ./configure
           make -j2
           make clean

@@ -193,7 +193,12 @@ set(TGL_SCHEME_SOURCES
   ${TGL_SRC_DIR}/append.tl
   ${TGL_SRC_DIR}/mtproto.tl
 )
-string(JOIN "|" TGL_SCHEME_SOURCES_PIPE ${TGL_SCHEME_SOURCES})
+set(TGL_SCHEME_INPUTS_FILE ${TGL_BIN_DIR}/scheme_inputs.txt)
+file(MAKE_DIRECTORY ${TGL_BIN_DIR})
+file(WRITE ${TGL_SCHEME_INPUTS_FILE} "")
+foreach(src IN LISTS TGL_SCHEME_SOURCES)
+  file(APPEND ${TGL_SCHEME_INPUTS_FILE} "${src}\n")
+endforeach()
 
 add_executable(tg_tl_parser
   ${TGL_SRC_DIR}/tl-parser/tl-parser.c
@@ -222,9 +227,9 @@ target_link_libraries(tg_generate PRIVATE OpenSSL::SSL OpenSSL::Crypto ZLIB::ZLI
 add_custom_command(
   OUTPUT ${TGL_AUTO_DIR}/scheme.tl
   COMMAND ${CMAKE_COMMAND} -E make_directory ${TGL_AUTO_DIR}
-  COMMAND ${CMAKE_COMMAND} -DOUTPUT=${TGL_AUTO_DIR}/scheme.tl -DINPUTS=${TGL_SCHEME_SOURCES_PIPE}
+  COMMAND ${CMAKE_COMMAND} -DOUTPUT=${TGL_AUTO_DIR}/scheme.tl -DINPUTS_FILE=${TGL_SCHEME_INPUTS_FILE}
           -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/concat.cmake
-  DEPENDS ${TGL_SCHEME_SOURCES}
+  DEPENDS ${TGL_SCHEME_SOURCES} ${TGL_SCHEME_INPUTS_FILE}
 )
 
 add_custom_command(

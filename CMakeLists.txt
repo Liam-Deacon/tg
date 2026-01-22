@@ -11,6 +11,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+  add_compile_options(-fcommon)
+endif()
+
 option(TG_ENABLE_LIBEVENT "Enable libevent support" ON)
 option(TG_ENABLE_LUA "Enable Lua scripting support" ON)
 option(TG_ENABLE_PYTHON "Enable Python scripting support" OFF)

@@ -332,6 +332,9 @@ target_include_directories(tg PRIVATE
   ${TGL_AUTO_DIR}
   ${LIBEVENT_INCLUDE_DIRS}
 )
+target_link_directories(tg PRIVATE
+  ${LIBEVENT_LIBRARY_DIRS}
+)
 target_compile_definitions(tg PRIVATE HAVE_CONFIG_H)
 target_link_libraries(tg PRIVATE OpenSSL::SSL OpenSSL::Crypto ZLIB::ZLIB ${LIBEVENT_LIBRARIES} ${EXTRA_LIBS})
 
@@ -357,6 +360,13 @@ target_include_directories(telegram-cli PRIVATE
   ${JANSSON_INCLUDE_DIRS}
   ${LUA_INCLUDE_DIRS}
   ${Python3_INCLUDE_DIRS}
+)
+target_link_directories(telegram-cli PRIVATE
+  ${LIBEVENT_LIBRARY_DIRS}
+  ${READLINE_LIBRARY_DIRS}
+  ${LIBCONFIG_LIBRARY_DIRS}
+  ${JANSSON_LIBRARY_DIRS}
+  ${LUA_LIBRARY_DIRS}
 )
 target_compile_definitions(telegram-cli PRIVATE HAVE_CONFIG_H)
 target_link_libraries(telegram-cli PRIVATE

@@ -204,7 +204,7 @@ target_include_directories(tg_tl_parser PRIVATE
   ${TGL_SRC_DIR}/tl-parser
 )
 target_compile_definitions(tg_tl_parser PRIVATE HAVE_CONFIG_H)
-target_link_libraries(tg_tl_parser PRIVATE ${EXTRA_LIBS})
+target_link_libraries(tg_tl_parser PRIVATE ZLIB::ZLIB ${EXTRA_LIBS})
 
 add_executable(tg_generate
   ${TGL_SRC_DIR}/generate.c
@@ -217,7 +217,7 @@ target_include_directories(tg_generate PRIVATE
   ${TGL_SRC_DIR}
 )
 target_compile_definitions(tg_generate PRIVATE HAVE_CONFIG_H)
-target_link_libraries(tg_generate PRIVATE OpenSSL::SSL OpenSSL::Crypto ${EXTRA_LIBS})
+target_link_libraries(tg_generate PRIVATE OpenSSL::SSL OpenSSL::Crypto ZLIB::ZLIB ${EXTRA_LIBS})
 
 add_custom_command(
   OUTPUT ${TGL_AUTO_DIR}/scheme.tl

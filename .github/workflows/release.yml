@@ -53,9 +53,10 @@ jobs:
 
       - name: Package
         run: |
+          WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
           tar -czf telegram-cli-${{ matrix.asset }}.tar.gz \
             -C build/bin telegram-cli \
-            -C . LICENSE README.md
+            -C "$WORKSPACE" LICENSE README.md
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1

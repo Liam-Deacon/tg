@@ -176,6 +176,11 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
   @ONLY
 )
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/tgl/config.h
+  @ONLY
+)
 
 set(TGL_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tgl)
 set(TGL_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/tgl)

@@ -12,14 +12,78 @@ m4_include([m4-ax_gcc_builtin.m4])
 # Checks for programs.
 AC_PROG_CC
 
-# BSD locations for headers and libraries from packages, Linux locations for self-compiled stuff.
-CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-LDFLAGS="$LDFLAGS -L/usr/local/lib"
+AC_PATH_PROG([PKG_CONFIG], [pkg-config])
+
+STATIC_LDFLAGS=""
+AC_ARG_ENABLE([static],
+  [AS_HELP_STRING([--enable-static], [link statically when possible (non-macOS)])],
+  [
+    if test "x$enableval" = "xyes" ; then
+      case "`uname -s 2>/dev/null`" in
+        Darwin) AC_MSG_WARN([static linking is not supported on macOS]);;
+        *) STATIC_LDFLAGS="-static"; PKG_CONFIG_LIBS="--static";;
+      esac
+    fi
+  ],[
+  ])
+
+# Common prefix paths for Homebrew/MacPorts and self-compiled libraries.
+for prefix in /opt/homebrew /opt/local /usr/local; do
+  if test -d "$prefix/include" ; then
+    CPPFLAGS="$CPPFLAGS -I$prefix/include"
+  fi
+  if test -d "$prefix/lib" ; then
+    LDFLAGS="$LDFLAGS -L$prefix/lib"
+  fi
+  if test -d "$prefix/lib/pkgconfig" ; then
+    PKG_CONFIG_PATH="$prefix/lib/pkgconfig:$PKG_CONFIG_PATH"
+  fi
+  if test -d "$prefix/share/pkgconfig" ; then
+    PKG_CONFIG_PATH="$prefix/share/pkgconfig:$PKG_CONFIG_PATH"
+  fi
+done
+
+for prefix in /opt/homebrew/opt/openssl@3 /usr/local/opt/openssl@3 /opt/homebrew/opt/openssl@1.1 /usr/local/opt/openssl@1.1 /opt/homebrew/opt/readline /usr/local/opt/readline; do
+  if test -d "$prefix/include" ; then
+    CPPFLAGS="$CPPFLAGS -I$prefix/include"
+  fi
+  if test -d "$prefix/lib" ; then
+    LDFLAGS="$LDFLAGS -L$prefix/lib"
+  fi
+  if test -d "$prefix/lib/pkgconfig" ; then
+    PKG_CONFIG_PATH="$prefix/lib/pkgconfig:$PKG_CONFIG_PATH"
+  fi
+done
+
+if test "x$PKG_CONFIG" != "x" ; then
+  export PKG_CONFIG_PATH
+fi
 
 # Checks for libraries.
 AC_SEARCH_LIBS([clock_gettime], [rt])
 AC_SEARCH_LIBS([backtrace], [execinfo])
-AC_CHECK_LIB([event], [event_base_new], [], [AC_MSG_ERROR([no libevent found])])
+AC_SEARCH_LIBS([dlopen], [dl])
+AC_SEARCH_LIBS([openpty], [util])
+
+EVENT_LIBS=""
+EVENT_CFLAGS=""
+if test "x$PKG_CONFIG" != "x" ; then
+  if $PKG_CONFIG --exists libevent ; then
+    EVENT_CFLAGS=`$PKG_CONFIG --cflags libevent 2>/dev/null`
+    EVENT_LIBS=`$PKG_CONFIG ${PKG_CONFIG_LIBS} --libs libevent 2>/dev/null`
+  fi
+fi
+
+if test "x$EVENT_LIBS" = "x" ; then
+  save_LIBS="$LIBS"
+  AC_CHECK_LIB([event], [event_base_new], [], [AC_MSG_ERROR([no libevent found])])
+  LIBS="$save_LIBS"
+  EVENT_LIBS="-levent"
+fi
+
+CPPFLAGS="$CPPFLAGS $EVENT_CFLAGS"
+AC_SUBST([EVENT_LIBS])
+AC_SUBST([STATIC_LDFLAGS])
 
 EVENT_VER=""
 
@@ -192,4 +256,3 @@ AX_GCC_BUILTIN(__builtin_bswap32)
 AC_SUBST(EXTRA_LIBS)
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
-

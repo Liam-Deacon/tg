@@ -1,0 +1,16 @@
+if(NOT DEFINED OUTPUT)
+  message(FATAL_ERROR "OUTPUT is required")
+endif()
+if(NOT DEFINED INPUTS)
+  message(FATAL_ERROR "INPUTS is required")
+endif()
+
+get_filename_component(out_dir "${OUTPUT}" DIRECTORY)
+file(MAKE_DIRECTORY "${out_dir}")
+
+string(REPLACE "|" ";" input_list "${INPUTS}")
+file(WRITE "${OUTPUT}" "")
+foreach(input IN LISTS input_list)
+  file(READ "${input}" content)
+  file(APPEND "${OUTPUT}" "${content}")
+endforeach()

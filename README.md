@@ -66,6 +66,11 @@ Then,
      ./configure
      make
 
+For mostly static Linux builds (requires static variants of dependencies):
+
+     ./configure --enable-static
+     make
+
 #### Other methods to install on linux
 
 On Gentoo: use ebuild provided.
@@ -78,9 +83,21 @@ The client depends on [readline library](http://cnswww.cns.cwru.edu/php/chet/rea
 
 If using [Homebrew](http://brew.sh/):
 
-     brew install libconfig readline lua python libevent jansson
-     export CFLAGS="-I/usr/local/include -I/usr/local/Cellar/readline/6.3.8/include"
-     export LDFLAGS="-L/usr/local/lib -L/usr/local/Cellar/readline/6.3.8/lib"
+     brew install libconfig readline lua python libevent jansson openssl@3 pkg-config
+     ./configure && make
+
+If configure cannot find keg-only dependencies (notably `openssl@3` or `readline`), add their include/lib paths before running `./configure`:
+
+     # Apple Silicon
+     export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include -I/opt/homebrew/opt/readline/include"
+     export LDFLAGS="-L/opt/homebrew/opt/openssl@3/lib -L/opt/homebrew/opt/readline/lib"
+     export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig:/opt/homebrew/opt/readline/lib/pkgconfig"
+     ./configure && make
+
+     # Intel macOS
+     export CPPFLAGS="-I/usr/local/opt/openssl@3/include -I/usr/local/opt/readline/include"
+     export LDFLAGS="-L/usr/local/opt/openssl@3/lib -L/usr/local/opt/readline/lib"
+     export PKG_CONFIG_PATH="/usr/local/opt/openssl@3/lib/pkgconfig:/usr/local/opt/readline/lib/pkgconfig"
      ./configure && make
 
 Thanks to [@jfontan](https://github.com/vysheng/tg/issues/3#issuecomment-28293731) for this solution.
@@ -106,6 +123,32 @@ Then build:
 
      env CC=clang CFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib LUA=/usr/local/bin/lua52 LUA_INCLUDE=-I/usr/local/include/lua52 LUA_LIB=-llua-5.2 ./configure
      make
+
+#### CMake (alternative)
+
+This repo now includes a CMake build that can be used instead of autotools.
+
+     cmake -S . -B build -DTG_ENABLE_PYTHON=OFF
+     cmake --build build
+
+If CMake cannot find keg-only dependencies on macOS, set `OPENSSL_ROOT_DIR` and `PKG_CONFIG_PATH` first:
+
+     export OPENSSL_ROOT_DIR="$(brew --prefix openssl@3)"
+     export PKG_CONFIG_PATH="$(brew --prefix openssl@3)/lib/pkgconfig:$(brew --prefix readline)/lib/pkgconfig"
+     cmake -S . -B build -DTG_ENABLE_PYTHON=OFF
+     cmake --build build
+
+For mostly static Linux builds (requires static variants of dependencies):
+
+     cmake -S . -B build -DTG_ENABLE_STATIC=ON
+     cmake --build build
+
+To create distro packages (Linux):
+
+     cmake -S . -B build
+     cmake --build build
+     cpack -G DEB -B build
+     cpack -G RPM -B build
 
 #### Other UNIX
 

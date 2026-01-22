@@ -1,0 +1,15 @@
+#ifndef TG_CONFIG_H
+#define TG_CONFIG_H
+
+#cmakedefine HAVE_EXECINFO_H
+#cmakedefine HAVE_LIBCONFIG
+#cmakedefine EVENT_V2
+#cmakedefine EVENT_V1
+#cmakedefine DISABLE_EXTF
+#cmakedefine USE_LUA 1
+#cmakedefine USE_PYTHON 1
+#cmakedefine USE_JSON 1
+
+#define PROG_NAME "@TG_PROG_NAME@"
+
+#endif

@@ -1,0 +1,63 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset: linux-x86_64
+          - os: macos-13
+            asset: macos-x86_64
+          - os: macos-14
+            asset: macos-arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies (Ubuntu)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            autoconf automake build-essential cmake pkg-config \
+            libconfig-dev libevent-dev libjansson-dev libreadline-dev \
+            liblua5.3-dev libssl-dev zlib1g-dev
+
+      - name: Install dependencies (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew install \
+            autoconf automake cmake pkg-config \
+            libconfig libevent jansson lua@5.3 openssl@3 readline
+
+      - name: Build (CMake)
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            export OPENSSL_ROOT_DIR="$(brew --prefix openssl@3)"
+            export PKG_CONFIG_PATH="$(brew --prefix openssl@3)/lib/pkgconfig:$(brew --prefix readline)/lib/pkgconfig:${PKG_CONFIG_PATH}"
+          fi
+          cmake -S . -B build -DTG_ENABLE_PYTHON=OFF
+          cmake --build build -j2
+
+      - name: Package
+        run: |
+          tar -czf telegram-cli-${{ matrix.asset }}.tar.gz \
+            -C build/bin telegram-cli \
+            -C . LICENSE README.md
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: telegram-cli-${{ matrix.asset }}.tar.gz

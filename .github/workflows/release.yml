@@ -33,7 +33,8 @@ jobs:
           sudo apt-get install -y \
             autoconf automake build-essential cmake pkg-config \
             libconfig-dev libevent-dev libjansson-dev libreadline-dev \
-            liblua5.3-dev libssl-dev zlib1g-dev
+            liblua5.3-dev libssl-dev zlib1g-dev \
+            rpm dpkg-dev
 
       - name: Install dependencies (macOS)
         if: startsWith(matrix.os, 'macos')
@@ -44,12 +45,20 @@ jobs:
 
       - name: Build (CMake)
         run: |
+          RELEASE_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION="${RELEASE_VERSION%%-*}"
           if [[ "$RUNNER_OS" == "macOS" ]]; then
             export OPENSSL_ROOT_DIR="$(brew --prefix openssl@3)"
             export PKG_CONFIG_PATH="$(brew --prefix openssl@3)/lib/pkgconfig:$(brew --prefix readline)/lib/pkgconfig:${PKG_CONFIG_PATH}"
           fi
-          cmake -S . -B build -DTG_ENABLE_PYTHON=OFF
+          cmake -S . -B build -DTG_ENABLE_PYTHON=OFF -DTG_PACKAGE_VERSION="${PACKAGE_VERSION}"
           cmake --build build -j2
+
+      - name: Package (CPack)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          cd build
+          cpack
 
       - name: Package
         run: |
@@ -62,3 +71,11 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: telegram-cli-${{ matrix.asset }}.tar.gz
+
+      - name: Upload Linux packages
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/*.deb
+            build/*.rpm
